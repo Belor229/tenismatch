@@ -5,6 +5,7 @@ import { initializeDatabase } from "@/lib/init";
 import { AdType, UserLevel } from "@/types";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { revalidatePath } from "next/cache";
+import { MOCK_ADS } from "@/lib/mockData";
 
 export async function createAd(formData: any) {
   const { userId, type, title, description, city, location, eventDatetime, requiredLevel } = formData;
@@ -55,10 +56,10 @@ export async function getAds(filters: any = {}) {
 
   try {
     const [rows] = await pool.query<RowDataPacket[]>(query, params);
-    return rows;
+    return rows.length > 0 ? rows : MOCK_ADS;
   } catch (error) {
-    console.error("Fetch ads error:", error);
-    return [];
+    console.error("Fetch ads error (falling back to mocks):", error);
+    return MOCK_ADS;
   }
 }
 
@@ -69,10 +70,13 @@ export async function getAdById(id: string) {
       [id]
     );
 
-    if (rows.length === 0) return null;
+    if (rows.length === 0) {
+      return MOCK_ADS.find(a => a.id.toString() === id.toString()) || null;
+    }
     return rows[0];
   } catch (error) {
-    console.error("Fetch ad detail error:", error);
-    return null;
+    console.error("Fetch ad detail error (falling back to mocks):", error);
+    const mock = MOCK_ADS.find(a => a.id.toString() === id.toString());
+    return mock || null;
   }
 }
