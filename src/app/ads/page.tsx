@@ -104,9 +104,9 @@ export default async function AdsPage({
                                 <div className="mt-auto pt-6 border-t border-gray-50 flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                         <div className="w-8 h-8 bg-brand-green/10 rounded-full flex items-center justify-center text-brand-green font-bold text-xs uppercase">
-                                            {ad.display_name.charAt(0)}
+                                            {(ad.display_name || "U").charAt(0)}
                                         </div>
-                                        <span className="font-semibold text-gray-900 text-sm">{ad.display_name}</span>
+                                        <span className="font-semibold text-gray-900 text-sm">{ad.display_name || "Utilisateur"}</span>
                                     </div>
                                     {ad.required_level && (
                                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{ad.required_level}</span>

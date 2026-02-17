@@ -20,7 +20,7 @@ export default async function ProfilePage() {
                         <div className="flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-6 text-center md:text-left">
                             <div className="w-24 h-24 md:w-32 md:h-32 bg-white p-1.5 md:p-2 rounded-[28px] md:rounded-[32px] shadow-xl">
                                 <div className="w-full h-full bg-brand-green/10 rounded-[22px] md:rounded-[24px] flex items-center justify-center text-brand-green font-bold text-3xl md:text-4xl uppercase">
-                                    {profile.display_name.charAt(0)}
+                                    {(profile.display_name || "U").charAt(0)}
                                 </div>
                             </div>
                             <div className="pb-1">
