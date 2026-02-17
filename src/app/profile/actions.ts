@@ -3,6 +3,7 @@
 import pool from "@/lib/db";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
 import { revalidatePath } from "next/cache";
+import { MOCK_PROFILE, MOCK_ADS } from "@/lib/mockData";
 
 export async function getProfile(userId: number) {
     try {
@@ -10,11 +11,11 @@ export async function getProfile(userId: number) {
             "SELECT p.*, u.phone FROM user_profiles p JOIN users u ON p.user_id = u.id WHERE p.user_id = ?",
             [userId]
         );
-        if (rows.length === 0) return null;
+        if (rows.length === 0) return MOCK_PROFILE;
         return rows[0];
     } catch (error) {
-        console.error("Fetch profile error:", error);
-        return null;
+        console.error("Fetch profile error (mock fallback):", error);
+        return MOCK_PROFILE;
     }
 }
 
@@ -43,9 +44,9 @@ export async function getUserAds(userId: number) {
             "SELECT * FROM ads WHERE user_id = ? AND is_deleted = 0 ORDER BY created_at DESC",
             [userId]
         );
-        return rows;
+        return rows.length > 0 ? rows : MOCK_ADS.filter(a => a.user_id === userId);
     } catch (error) {
-        console.error("Fetch user ads error:", error);
-        return [];
+        console.error("Fetch user ads error (mock fallback):", error);
+        return MOCK_ADS.filter(a => a.user_id === userId);
     }
 }
