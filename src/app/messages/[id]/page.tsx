@@ -16,19 +16,24 @@ export default async function ConversationPage({ params }: { params: Promise<{ i
     const initialMessages = await getMessages(conversationId);
 
     // Get other user name
-    const { data: participants, error } = await supabase
-        .from('conversation_participants')
-        .select(`
-            user_profiles(display_name)
-        `)
-        .eq('conversation_id', conversationId)
-        .neq('user_id', userId)
-        .single();
+    let otherUserName = "Joueur";
+    try {
+        const { data: participants, error } = await supabase
+            .from('conversation_participants')
+            .select(`
+                user_profiles(display_name)
+            `)
+            .eq('conversation_id', conversationId)
+            .neq('user_id', userId)
+            .single();
 
-    if (error || !participants) notFound();
-
-    // @ts-ignore
-    const otherUserName = participants.user_profiles?.display_name || "Joueur";
+        if (!error && participants?.user_profiles) {
+            // @ts-ignore
+            otherUserName = participants.user_profiles.display_name || "Joueur";
+        }
+    } catch (e) {
+        console.warn("Error fetching participant name:", e);
+    }
 
     return (
         <div className="max-w-4xl mx-auto px-4 md:px-6 py-10">

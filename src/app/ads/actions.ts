@@ -100,10 +100,10 @@ export async function getAdById(id: string) {
 
     return {
       ...data,
-      display_name: data.user_profiles?.display_name,
-      avatar_url: data.user_profiles?.avatar_url,
-      user_level: data.user_profiles?.level,
-      phone: data.users?.phone
+      display_name: data.user_profiles?.display_name || "Utilisateur",
+      avatar_url: data.user_profiles?.avatar_url || null,
+      user_level: data.user_profiles?.level || "debutant",
+      phone: data.users?.phone || ""
     };
   } catch (error) {
     console.error("Fetch ad detail error (falling back to mocks):", error);
