@@ -3,9 +3,12 @@ import { getMessages } from "../actions";
 import ChatWindow from "@/components/ChatWindow";
 import { supabase } from "@/lib/supabase";
 
-export default async function ConversationPage({ params }: { params: { id: string } }) {
+export const dynamic = "force-dynamic";
+
+export default async function ConversationPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     const userId = 1; // Mock current user for V1
-    const conversationId = parseInt(params.id);
+    const conversationId = parseInt(id);
 
     if (isNaN(conversationId)) notFound();
 

@@ -9,9 +9,10 @@ export const dynamic = "force-dynamic";
 export default async function AdsPage({
     searchParams,
 }: {
-    searchParams: { type?: AdType; city?: string; level?: UserLevel; created?: string };
+    searchParams: Promise<{ type?: AdType; city?: string; level?: UserLevel; created?: string }>;
 }) {
-    const ads = await getAds(searchParams);
+    const filters = await searchParams;
+    const ads = await getAds(filters);
 
     return (
         <div className="max-w-7xl mx-auto px-6 py-12 md:py-20">
@@ -37,7 +38,7 @@ export default async function AdsPage({
                     </div>
                     <Link
                         href="/ads"
-                        className={cn("flex-shrink-0 px-6 py-3 rounded-2xl text-sm font-bold transition-all shadow-sm", !searchParams.type ? "bg-brand-green text-white shadow-brand-green/20" : "bg-white border border-gray-100 text-gray-600 hover:bg-gray-50")}
+                        className={cn("flex-shrink-0 px-6 py-3 rounded-2xl text-sm font-bold transition-all shadow-sm", !filters.type ? "bg-brand-green text-white shadow-brand-green/20" : "bg-white border border-gray-100 text-gray-600 hover:bg-gray-50")}
                     >
                         Tous
                     </Link>
@@ -52,7 +53,7 @@ export default async function AdsPage({
                             href={`/ads?type=${t.id}`}
                             className={cn(
                                 "flex-shrink-0 px-6 py-3 rounded-2xl text-sm font-bold transition-all shadow-sm",
-                                searchParams.type === t.id ? "bg-brand-green text-white shadow-brand-green/20" : "bg-white border border-gray-100 text-gray-600 hover:bg-gray-50"
+                                filters.type === t.id ? "bg-brand-green text-white shadow-brand-green/20" : "bg-white border border-gray-100 text-gray-600 hover:bg-gray-50"
                             )}
                         >
                             {t.label}

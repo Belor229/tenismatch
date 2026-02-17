@@ -7,8 +7,9 @@ import ContactButton from "@/components/ContactButton";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdDetailPage({ params }: { params: { id: string } }) {
-    const ad = await getAdById(params.id);
+export default async function AdDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const ad = await getAdById(id);
     const myId = 1; // Mock current user for V1
 
     if (!ad) {
