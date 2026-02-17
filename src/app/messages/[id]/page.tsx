@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation";
-import { getMessages, getConversations } from "../actions";
+import { getMessages } from "../actions";
 import ChatWindow from "@/components/ChatWindow";
-import pool from "@/lib/db";
-import { RowDataPacket } from "mysql2";
+import { supabase } from "@/lib/supabase";
 
 export default async function ConversationPage({ params }: { params: { id: string } }) {
     const userId = 1; // Mock current user for V1
@@ -13,16 +12,20 @@ export default async function ConversationPage({ params }: { params: { id: strin
     // Get initial messages
     const initialMessages = await getMessages(conversationId);
 
-    // Get other user name (simplified: fetch other participant from DB)
-    const [participants] = await pool.query<RowDataPacket[]>(
-        `SELECT p.display_name 
-     FROM conversation_participants cp 
-     JOIN user_profiles p ON cp.user_id = p.user_id 
-     WHERE cp.conversation_id = ? AND cp.user_id != ?`,
-        [conversationId, userId]
-    );
+    // Get other user name
+    const { data: participants, error } = await supabase
+        .from('conversation_participants')
+        .select(`
+            user_profiles(display_name)
+        `)
+        .eq('conversation_id', conversationId)
+        .neq('user_id', userId)
+        .single();
 
-    if (participants.length === 0) notFound();
+    if (error || !participants) notFound();
+
+    // @ts-ignore
+    const otherUserName = participants.user_profiles?.display_name || "Joueur";
 
     return (
         <div className="max-w-4xl mx-auto px-4 md:px-6 py-10">
@@ -30,7 +33,7 @@ export default async function ConversationPage({ params }: { params: { id: strin
                 conversationId={conversationId}
                 userId={userId}
                 initialMessages={initialMessages}
-                otherUserName={participants[0].display_name}
+                otherUserName={otherUserName}
             />
         </div>
     );

@@ -1,19 +1,22 @@
 "use server";
 
-import pool from "@/lib/db";
-import { RowDataPacket } from "mysql2";
+import { supabase } from "@/lib/supabase";
 
 export async function getCalendarEvents(month: number, year: number) {
     try {
-        // Fetch all ads with an event_datetime in the specified month
-        const [rows] = await pool.query<RowDataPacket[]>(
-            `SELECT id, title, type, event_datetime, city 
-       FROM ads 
-       WHERE is_active = 1 AND is_deleted = 0 
-       AND MONTH(event_datetime) = ? AND YEAR(event_datetime) = ?`,
-            [month, year]
-        );
-        return rows;
+        const startDate = new Date(year, month - 1, 1).toISOString();
+        const endDate = new Date(year, month, 0, 23, 59, 59).toISOString();
+
+        const { data, error } = await supabase
+            .from('ads')
+            .select('id, title, type, event_datetime, city')
+            .eq('is_active', true)
+            .eq('is_deleted', false)
+            .gte('event_datetime', startDate)
+            .lte('event_datetime', endDate);
+
+        if (error) throw error;
+        return data || [];
     } catch (error) {
         console.error("Fetch calendar events error:", error);
         return [];
