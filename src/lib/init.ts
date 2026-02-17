@@ -3,9 +3,16 @@ import fs from 'fs';
 import path from 'path';
 
 export async function initializeDatabase() {
+    // skip during build
+    if (process.env.NEXT_PHASE === 'phase-production-build') return { success: true };
+
     console.log('--- Database Initialization Started ---');
     try {
         const schemaPath = path.join(process.cwd(), 'src/lib/schema.sql');
+        if (!fs.existsSync(schemaPath)) {
+            console.warn('Schema file not found at', schemaPath);
+            return { success: false };
+        }
         const schema = fs.readFileSync(schemaPath, 'utf8');
 
         // Split schema by semicolon to execute queries one by one

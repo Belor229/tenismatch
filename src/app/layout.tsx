@@ -11,7 +11,10 @@ import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "TennisMatch | Trouvez votre partenaire de tennis",
-  description: "Plateforme dédiée au tennis pour trouver des partenaires, organiser des matchs et participer à des événements locaux.",
+  description: "Plateforme dédiée au tennis pour trouver des partenaires et organiser des matchs localement.",
+  icons: {
+    icon: "/icon.svg",
+  }
 };
 
 export default function RootLayout({
