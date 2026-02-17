@@ -1,6 +1,7 @@
 "use server";
 
 import pool from "@/lib/db";
+import { initializeDatabase } from "@/lib/init";
 import { AdType, UserLevel } from "@/types";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { revalidatePath } from "next/cache";
@@ -21,7 +22,7 @@ export async function createAd(formData: any) {
 
     revalidatePath("/");
     revalidatePath("/ads");
-    
+
     return { success: true, adId: result.insertId };
   } catch (error: any) {
     console.error("Create ad error:", error);
@@ -30,6 +31,9 @@ export async function createAd(formData: any) {
 }
 
 export async function getAds(filters: any = {}) {
+  // Ensure DB is initialized (will only run effectively once)
+  await initializeDatabase();
+
   const { type, city, level } = filters;
   let query = "SELECT a.*, p.display_name, p.avatar_url FROM ads a JOIN user_profiles p ON a.user_id = p.user_id WHERE a.is_active = 1 AND a.is_deleted = 0";
   const params: any[] = [];
