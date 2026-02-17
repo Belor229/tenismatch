@@ -2,6 +2,8 @@ import { Search, MessageSquare, Clock, User } from "lucide-react";
 import Link from "next/link";
 import { getConversations } from "./actions";
 
+export const dynamic = "force-dynamic";
+
 export default async function MessagesPage() {
     // Mock current user ID for V1
     const userId = 1;

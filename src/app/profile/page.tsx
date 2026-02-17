@@ -2,6 +2,8 @@ import { User, MapPin, Calendar, Trophy, MessageSquare, Settings, Edit2, LogOut,
 import Link from "next/link";
 import { getProfile, getUserAds } from "./actions";
 
+export const dynamic = "force-dynamic";
+
 export default async function ProfilePage() {
     const userId = 1; // Mock current user for V1
     const profile = await getProfile(userId);

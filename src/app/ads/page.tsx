@@ -4,6 +4,8 @@ import { getAds } from "./actions";
 import { AdType, UserLevel } from "@/types";
 import { cn } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdsPage({
     searchParams,
 }: {

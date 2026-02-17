@@ -5,6 +5,8 @@ import { getAdById } from "../actions";
 import { cn } from "@/lib/utils";
 import ContactButton from "@/components/ContactButton";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdDetailPage({ params }: { params: { id: string } }) {
     const ad = await getAdById(params.id);
     const myId = 1; // Mock current user for V1

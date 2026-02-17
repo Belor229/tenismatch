@@ -1,6 +1,8 @@
 import { getCalendarEvents } from "./actions";
 import CalendarView from "@/components/CalendarView";
 
+export const dynamic = "force-dynamic";
+
 export default async function CalendarPage() {
     const now = new Date();
     const events = await getCalendarEvents(now.getMonth() + 1, now.getFullYear());

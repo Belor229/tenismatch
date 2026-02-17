@@ -2,6 +2,8 @@ import { Search, Users, Trophy, ShoppingBag, ArrowRight, MapPin, Calendar as Cal
 import Link from "next/link";
 import { getAds } from "./ads/actions";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const ads = await getAds();
   const recentAds = ads.slice(0, 3);
