@@ -3,9 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, MapPin, Award, FileText, Lock, Check, ChevronLeft, AlertCircle } from "lucide-react";
-import { getProfile, updateProfile } from "@/app/profile/actions";
-import { cn } from "@/lib/utils";
+import { User, MapPin, Award, FileText, Check, ChevronLeft, AlertCircle } from "lucide-react";
+import { getProfileForCurrentUser, updateProfileForCurrentUser } from "@/app/profile/actions";
 
 export default function EditProfilePage() {
     const router = useRouter();
@@ -23,28 +22,30 @@ export default function EditProfilePage() {
 
     useEffect(() => {
         async function fetchProfile() {
-            const profile = await getProfile(1); // Mock UserId
+            const profile = await getProfileForCurrentUser();
             if (profile) {
                 setFormData({
-                    displayName: profile.display_name,
+                    displayName: profile.display_name || "",
                     age: profile.age || "",
                     city: profile.city || "",
                     level: profile.level || "debutant",
                     bio: profile.bio || "",
-                    isPublic: profile.is_public === 1,
+                    isPublic: profile.is_public === true || profile.is_public === 1,
                 });
+            } else {
+                router.push("/auth/login?redirect=/profile/edit");
             }
             setLoading(false);
         }
         fetchProfile();
-    }, []);
+    }, [router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
         setError("");
 
-        const result = await updateProfile(1, formData);
+        const result = await updateProfileForCurrentUser(formData);
 
         if (result.success) {
             router.push("/profile");

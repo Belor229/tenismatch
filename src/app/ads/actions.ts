@@ -3,7 +3,6 @@
 import { supabase } from "@/lib/supabase";
 import { AdType, UserLevel } from "@/types";
 import { revalidatePath } from "next/cache";
-import { MOCK_ADS } from "@/lib/mockData";
 
 export async function createAd(formData: any) {
   const { userId, type, title, description, city, location, eventDatetime, requiredLevel } = formData;
@@ -65,11 +64,11 @@ export async function getAds(filters: any = {}) {
     const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
-      console.warn("Supabase fetch error (falling back to mocks):", error);
-      return MOCK_ADS;
+      console.error("Supabase fetch error:", error);
+      return [];
     }
 
-    if (!data || data.length === 0) return MOCK_ADS;
+    if (!data || data.length === 0) return [];
 
     // Flatten the join result for convenience if needed, 
     // but the UI currently expects ad.display_name
@@ -79,8 +78,8 @@ export async function getAds(filters: any = {}) {
       avatar_url: ad.user_profiles?.avatar_url
     }));
   } catch (error) {
-    console.error("Fetch ads error (falling back to mocks):", error);
-    return MOCK_ADS;
+    console.error("Fetch ads error:", error);
+    return [];
   }
 }
 
@@ -92,11 +91,7 @@ export async function getAdById(id: string) {
       .eq('id', id)
       .single();
 
-    if (error || !data) {
-      console.warn("Ad not found or error (falling back to mocks):", error);
-      const mock = MOCK_ADS.find(a => a.id.toString() === id.toString());
-      return mock || null;
-    }
+    if (error || !data) return null;
 
     return {
       ...data,
@@ -106,8 +101,7 @@ export async function getAdById(id: string) {
       phone: data.users?.phone || ""
     };
   } catch (error) {
-    console.error("Fetch ad detail error (falling back to mocks):", error);
-    const mock = MOCK_ADS.find(a => a.id.toString() === id.toString());
-    return mock || null;
+    console.error("Fetch ad detail error:", error);
+    return null;
   }
 }

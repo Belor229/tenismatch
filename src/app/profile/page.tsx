@@ -1,15 +1,20 @@
-import { User, MapPin, Calendar, Trophy, MessageSquare, Settings, Edit2, LogOut, ChevronRight } from "lucide-react";
+import { redirect } from "next/navigation";
+import { User, MapPin, Trophy, MessageSquare, Edit2, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { getProfile, getUserAds } from "./actions";
+import { getCurrentUserId } from "@/lib/auth";
+import LogoutButton from "./LogoutButton";
 
 export const dynamic = "force-dynamic";
 
 export default async function ProfilePage() {
-    const userId = 1; // Mock current user for V1
+    const userId = await getCurrentUserId();
+    if (!userId) redirect("/auth/login?redirect=/profile");
+
     const profile = await getProfile(userId);
     const ads = await getUserAds(userId);
 
-    if (!profile) return <div>Profil non trouvé.</div>;
+    if (!profile) redirect("/auth/login?redirect=/profile");
 
     return (
         <div className="max-w-5xl mx-auto px-6 py-12 md:py-20">
@@ -39,9 +44,7 @@ export default async function ProfilePage() {
                             <Link href="/profile/edit" className="flex-grow md:flex-none flex items-center justify-center gap-2 bg-ui-gray/50 hover:bg-ui-gray px-6 py-3.5 rounded-2xl font-bold text-sm text-gray-700 transition-all">
                                 <Edit2 className="w-4 h-4" /> Modifier
                             </Link>
-                            <button className="p-3.5 bg-red-50 text-red-500 rounded-2xl hover:bg-red-100 transition-all flex items-center justify-center">
-                                <LogOut className="w-5 h-5" />
-                            </button>
+                            <LogoutButton />
                         </div>
                     </div>
 
@@ -58,15 +61,15 @@ export default async function ProfilePage() {
                                 <div className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Annonces</div>
                             </div>
                             <div className="bg-ui-gray/30 p-5 rounded-3xl text-center">
-                                <div className="text-2xl font-bold text-gray-900">4</div>
+                                <div className="text-2xl font-bold text-gray-900">—</div>
                                 <div className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Matchs joués</div>
                             </div>
                             <div className="bg-ui-gray/30 p-5 rounded-3xl text-center">
-                                <div className="text-2xl font-bold text-gray-900">12</div>
+                                <div className="text-2xl font-bold text-gray-900">—</div>
                                 <div className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Amis</div>
                             </div>
                             <div className="bg-ui-gray/30 p-5 rounded-3xl text-center">
-                                <div className="text-2xl font-bold text-gray-900">2</div>
+                                <div className="text-2xl font-bold text-gray-900">—</div>
                                 <div className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Tournois</div>
                             </div>
                         </div>

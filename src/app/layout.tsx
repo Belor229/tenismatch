@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 // import { Inter } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
+import NavbarWrapper from "@/components/NavbarWrapper";
 import Footer from "@/components/Footer";
 
 // const inter = Inter({
@@ -25,7 +25,7 @@ export default function RootLayout({
   return (
     <html lang="fr" className="scroll-smooth">
       <body className="font-sans antialiased min-h-screen flex flex-col pt-14 md:pt-16 pb-16 md:pb-0 bg-ui-gray/30">
-        <Navbar />
+        <NavbarWrapper />
         <main className="flex-grow">
           {children}
         </main>

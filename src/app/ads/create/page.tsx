@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Calendar, Clock, Trophy, MessageSquare, Package, ChevronRight, AlertCircle, Sparkles } from "lucide-react";
+import { MapPin, Calendar, MessageSquare, Package, ChevronRight, AlertCircle, Sparkles, Trophy } from "lucide-react";
 import { createAd } from "../actions";
+import { getCurrentUserIdAction } from "@/app/auth/actions";
 import { cn } from "@/lib/utils";
 
 const adTypes = [
@@ -17,6 +18,15 @@ export default function CreateAdPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [userId, setUserId] = useState<number | null>(null);
+
+  useEffect(() => {
+    getCurrentUserIdAction().then((id) => {
+      if (!id) router.push("/auth/login?redirect=/ads/create");
+      else setUserId(id);
+    });
+  }, [router]);
+
   const [formData, setFormData] = useState({
     type: "partenaire",
     title: "",
@@ -29,11 +39,11 @@ export default function CreateAdPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!userId) return;
     setLoading(true);
     setError("");
 
-    // Mock userId for V1 demo if no session management yet
-    const result = await createAd({ ...formData, userId: 1 });
+    const result = await createAd({ ...formData, userId });
 
     if (result.error) {
       setError(result.error);
@@ -154,7 +164,7 @@ export default function CreateAdPage() {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !userId}
           className="w-full bg-brand-green text-white py-5 rounded-[22px] font-bold text-lg hover:bg-opacity-95 transition-all shadow-xl shadow-brand-green/20 flex items-center justify-center gap-3 disabled:opacity-50"
         >
           {loading ? "Publication..." : "Publier l'annonce"} <ChevronRight className="w-5 h-5" />

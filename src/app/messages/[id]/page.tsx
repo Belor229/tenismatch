@@ -1,39 +1,22 @@
-import { notFound } from "next/navigation";
-import { getMessages } from "../actions";
+import { notFound, redirect } from "next/navigation";
+import { getMessages, getOtherParticipantName } from "../actions";
 import ChatWindow from "@/components/ChatWindow";
-import { supabase } from "@/lib/supabase";
+import { getCurrentUserId } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function ConversationPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const userId = 1; // Mock current user for V1
+    const userId = await getCurrentUserId();
+    if (!userId) redirect("/auth/login?redirect=/messages/" + id);
     const conversationId = parseInt(id);
 
     if (isNaN(conversationId)) notFound();
 
-    // Get initial messages
-    const initialMessages = await getMessages(conversationId);
-
-    // Get other user name
-    let otherUserName = "Joueur";
-    try {
-        const { data: participants, error } = await supabase
-            .from('conversation_participants')
-            .select(`
-                user_profiles(display_name)
-            `)
-            .eq('conversation_id', conversationId)
-            .neq('user_id', userId)
-            .single();
-
-        if (!error && participants?.user_profiles) {
-            // @ts-ignore
-            otherUserName = participants.user_profiles.display_name || "Joueur";
-        }
-    } catch (e) {
-        console.warn("Error fetching participant name:", e);
-    }
+    const [initialMessages, otherUserName] = await Promise.all([
+        getMessages(conversationId),
+        getOtherParticipantName(conversationId, userId),
+    ]);
 
     return (
         <div className="max-w-4xl mx-auto px-4 md:px-6 py-10">

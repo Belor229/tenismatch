@@ -33,8 +33,8 @@ function LoginForm() {
             setError(result.error);
             setLoading(false);
         } else {
-            // In a real app, we'd store the user in a context or cookie
-            router.push("/profile");
+            const redirectTo = searchParams.get("redirect") || "/profile";
+            router.push(redirectTo);
         }
     };
 

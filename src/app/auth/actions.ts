@@ -2,6 +2,7 @@
 
 import bcrypt from "bcryptjs";
 import { supabase } from "@/lib/supabase";
+import { createSession } from "@/lib/auth";
 
 export async function signup(formData: any) {
     const { phone, displayName, password, city, level } = formData;
@@ -79,16 +80,29 @@ export async function login(formData: any) {
             return { error: "Identifiants invalides." };
         }
 
+        const displayName = (user.user_profiles as { display_name?: string } | null)?.display_name;
+        await createSession(user.id, user.phone, displayName);
+
         return {
             success: true,
             user: {
                 id: user.id,
                 phone: user.phone,
-                displayName: user.user_profiles?.display_name
+                displayName
             }
         };
     } catch (error: any) {
         console.error("Login error:", error);
         return { error: "Une erreur est survenue lors de la connexion." };
     }
+}
+
+export async function logout() {
+    const { deleteSession } = await import("@/lib/auth");
+    await deleteSession();
+}
+
+export async function getCurrentUserIdAction(): Promise<number | null> {
+    const { getCurrentUserId } = await import("@/lib/auth");
+    return getCurrentUserId();
 }

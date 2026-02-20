@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, Calendar, MessageSquare, User, PlusCircle } from "lucide-react";
+import { Home, Search, Calendar, MessageSquare, User, PlusCircle, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
+import LogoutButton from "@/app/profile/LogoutButton";
 
 const navigation = [
     { name: "Accueil", href: "/", icon: Home },
@@ -13,7 +14,7 @@ const navigation = [
     { name: "Profil", href: "/profile", icon: User },
 ];
 
-export default function Navbar() {
+export default function Navbar({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
     const pathname = usePathname();
 
     return (
@@ -42,6 +43,16 @@ export default function Navbar() {
                             </Link>
                         );
                     })}
+                    {!isLoggedIn ? (
+                        <Link
+                            href="/auth/login"
+                            className="text-sm font-medium text-gray-600 hover:text-brand-green transition-colors flex items-center gap-2"
+                        >
+                            <LogIn className="w-4 h-4" /> Connexion
+                        </Link>
+                    ) : (
+                        <LogoutButton variant="icon" />
+                    )}
                     <Link
                         href="/ads/create"
                         className="bg-brand-green text-white px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 hover:bg-opacity-90 transition-all shadow-md shadow-brand-green/20"

@@ -2,7 +2,7 @@
 
 import { supabase } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
-import { MOCK_PROFILE, MOCK_ADS } from "@/lib/mockData";
+import { getCurrentUserId } from "@/lib/auth";
 
 export async function getProfile(userId: number) {
     try {
@@ -12,16 +12,22 @@ export async function getProfile(userId: number) {
             .eq('user_id', userId)
             .single();
 
-        if (error || !data) return MOCK_PROFILE;
+        if (error || !data) return null;
 
         return {
             ...data,
             phone: data.users?.phone
         };
     } catch (error) {
-        console.error("Fetch profile error (mock fallback):", error);
-        return MOCK_PROFILE;
+        console.error("Fetch profile error:", error);
+        return null;
     }
+}
+
+export async function getProfileForCurrentUser() {
+    const userId = await getCurrentUserId();
+    if (!userId) return null;
+    return getProfile(userId);
 }
 
 export async function updateProfile(userId: number, data: any) {
@@ -59,11 +65,16 @@ export async function getUserAds(userId: number) {
             .eq('is_deleted', false)
             .order('created_at', { ascending: false });
 
-        if (error || !data || data.length === 0) return MOCK_ADS.filter(a => a.user_id === userId);
-
-        return data;
+        if (error) throw error;
+        return data || [];
     } catch (error) {
-        console.error("Fetch user ads error (mock fallback):", error);
-        return MOCK_ADS.filter(a => a.user_id === userId);
+        console.error("Fetch user ads error:", error);
+        return [];
     }
+}
+
+export async function updateProfileForCurrentUser(data: any) {
+    const userId = await getCurrentUserId();
+    if (!userId) return { error: "Non authentifié." };
+    return updateProfile(userId, data);
 }

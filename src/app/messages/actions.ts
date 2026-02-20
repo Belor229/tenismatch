@@ -5,52 +5,90 @@ import { revalidatePath } from "next/cache";
 
 export async function getConversations(userId: number) {
     try {
-        // Fetch conversations where user is a participant
-        const { data: participants, error: pError } = await supabase
+        const { data: myParticipants, error: pError } = await supabase
             .from('conversation_participants')
             .select('conversation_id')
             .eq('user_id', userId);
 
-        if (pError || !participants) throw pError;
+        if (pError || !myParticipants?.length) return [];
 
-        const convIds = participants.map(p => p.conversation_id);
-        if (convIds.length === 0) return [];
+        const convIds = myParticipants.map(p => p.conversation_id);
 
-        // Fetch conversation details and other participants
-        const { data, error } = await supabase
+        const { data: convs, error } = await supabase
             .from('conversations')
-            .select(`
-                *,
-                conversation_participants!inner(user_id, last_read_at),
-                messages(message_text, created_at)
-            `)
+            .select('*')
             .in('id', convIds)
-            .neq('conversation_participants.user_id', userId)
             .order('last_message_at', { ascending: false });
 
-        if (error) throw error;
+        if (error || !convs) return [];
 
-        // Fetch user profiles for other participants manually if needed, 
-        // or join if Supabase allows more complex nested inner joins.
-        // For simplicity in V1 refactor, we'll map the data to the expected format.
+        const result = [];
+        for (const conv of convs) {
+            const { data: otherParticipants } = await supabase
+                .from('conversation_participants')
+                .select('user_id')
+                .eq('conversation_id', conv.id)
+                .neq('user_id', userId)
+                .limit(1);
 
-        return data.map(conv => {
-            const lastMsg = conv.messages?.sort((a: any, b: any) =>
-                new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-            )[0];
+            const otherUserId = otherParticipants?.[0]?.user_id;
+            let otherUserName = "Joueur";
 
-            return {
-                ...conv,
+            if (otherUserId) {
+                const { data: profile } = await supabase
+                    .from('user_profiles')
+                    .select('display_name')
+                    .eq('user_id', otherUserId)
+                    .single();
+                otherUserName = profile?.display_name || "Joueur";
+            }
+
+            const { data: msgs } = await supabase
+                .from('messages')
+                .select('message_text, created_at')
+                .eq('conversation_id', conv.id)
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            const lastMsg = msgs?.[0];
+
+            result.push({
+                id: conv.id,
                 last_message: lastMsg?.message_text,
                 last_message_time: lastMsg?.created_at,
-                // We'd need another query for profiles usually, or a view
-                other_user_name: "Joueur",
-                other_user_id: conv.conversation_participants[0]?.user_id
-            };
-        });
+                other_user_name: otherUserName,
+                other_user_id: otherUserId,
+            });
+        }
+
+        return result;
     } catch (error) {
         console.error("Fetch conversations error:", error);
         return [];
+    }
+}
+
+export async function getOtherParticipantName(conversationId: number, currentUserId: number): Promise<string> {
+    try {
+        const { data: participants } = await supabase
+            .from('conversation_participants')
+            .select('user_id')
+            .eq('conversation_id', conversationId)
+            .neq('user_id', currentUserId)
+            .limit(1);
+
+        const otherUserId = participants?.[0]?.user_id;
+        if (!otherUserId) return "Joueur";
+
+        const { data: profile } = await supabase
+            .from('user_profiles')
+            .select('display_name')
+            .eq('user_id', otherUserId)
+            .single();
+
+        return profile?.display_name || "Joueur";
+    } catch {
+        return "Joueur";
     }
 }
 

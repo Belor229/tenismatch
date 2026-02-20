@@ -32,7 +32,7 @@ export default async function Home() {
         <div className="relative z-10 max-w-5xl mx-auto px-6 text-center text-white">
           <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 mb-8 animate-fade-in shadow-xl">
             <span className="w-2 h-2 bg-brand-yellow rounded-full animate-pulse" />
-            <span className="text-sm font-medium">Rejoignez 500+ joueurs locaux</span>
+            <span className="text-sm font-medium">Rejoignez la communauté des joueurs locaux</span>
           </div>
           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-[1.1] tracking-tight">
             Le Tennis est plus fun <br />

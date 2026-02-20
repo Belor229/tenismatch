@@ -1,20 +1,18 @@
-import { MapPin, Calendar, Trophy, MessageSquare, ChevronLeft, Flag, Share2, Phone, User, Info } from "lucide-react";
+import { MapPin, Calendar, Trophy, ChevronLeft, Flag, Share2, User, Info } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAdById } from "../actions";
-import { cn } from "@/lib/utils";
 import ContactButton from "@/components/ContactButton";
+import { getCurrentUserId } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const ad = await getAdById(id);
-    const myId = 1; // Mock current user for V1
+    const myId = await getCurrentUserId();
 
-    if (!ad) {
-        notFound();
-    }
+    if (!ad) notFound();
 
     return (
         <div className="max-w-7xl mx-auto px-6 py-12 md:py-20">
@@ -92,7 +90,7 @@ export default async function AdDetailPage({ params }: { params: Promise<{ id: s
                             </div>
                             <div className="flex items-center gap-3 text-gray-600 text-sm">
                                 <Info className="w-5 h-5 text-gray-400" />
-                                12 matchs organisés
+                                Membre actif
                             </div>
                         </div>
 
