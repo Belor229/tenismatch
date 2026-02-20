@@ -27,12 +27,24 @@ export default function CreateAdPage() {
     });
   }, [router]);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    type: string;
+    title: string;
+    description: string;
+    country: string;
+    city: string;
+    location: string;
+    location_details: string;
+    eventDatetime: string;
+    requiredLevel: string;
+  }>({
     type: "partenaire",
     title: "",
     description: "",
+    country: "",
     city: "",
     location: "",
+    location_details: "",
     eventDatetime: "",
     requiredLevel: "intermediaire",
   });
@@ -43,7 +55,7 @@ export default function CreateAdPage() {
     setLoading(true);
     setError("");
 
-    const result = await createAd({ ...formData, userId });
+    const result: any = await createAd({ ...formData, userId });
 
     if (result.error) {
       setError(result.error);
@@ -62,10 +74,10 @@ export default function CreateAdPage() {
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {error && (
-            <div className="bg-red-50 text-red-600 p-4 rounded-2xl flex items-center gap-3 text-sm">
-              <AlertCircle className="w-5 h-5 flex-shrink-0" />
-              {error}
-            </div>
+          <div className="bg-red-50 text-red-600 p-4 rounded-2xl flex items-center gap-3 text-sm">
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            {error}
+          </div>
         )}
 
         {/* Type Selection */}
@@ -79,8 +91,8 @@ export default function CreateAdPage() {
                 onClick={() => setFormData({ ...formData, type: type.id })}
                 className={cn(
                   "flex flex-col items-center justify-center p-6 rounded-3xl border-2 transition-all gap-3",
-                  formData.type === type.id 
-                    ? "border-brand-green bg-brand-green/5 ring-4 ring-brand-green/10" 
+                  formData.type === type.id
+                    ? "border-brand-green bg-brand-green/5 ring-4 ring-brand-green/10"
                     : "border-gray-100 bg-white hover:border-gray-200"
                 )}
               >
@@ -123,6 +135,26 @@ export default function CreateAdPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-brand-green" /> Pays
+              </label>
+              <select
+                required
+                value={formData.country}
+                onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                className="w-full bg-ui-gray/50 border border-gray-100 py-4 px-6 rounded-2xl focus:ring-2 focus:ring-brand-green focus:bg-white outline-none transition-all appearance-none"
+              >
+                <option value="">Choisir un pays...</option>
+                <option value="Bénin">Bénin</option>
+                <option value="Togo">Togo</option>
+                <option value="Côte d'Ivoire">Côte d'Ivoire</option>
+                <option value="Sénégal">Sénégal</option>
+                <option value="Cameroun">Cameroun</option>
+                <option value="France">France</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-brand-green" /> Ville
               </label>
               <input
@@ -130,34 +162,45 @@ export default function CreateAdPage() {
                 required
                 value={formData.city}
                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                placeholder="Ex: Paris"
-                className="w-full bg-ui-gray/50 border border-gray-100 py-4 px-6 rounded-2xl focus:ring-2 focus:ring-brand-green focus:bg-white outline-none transition-all"
-              />
-            </div>
-            
-            <div className={`${formData.type === 'materiel' ? 'hidden' : 'block'} space-y-2`}>
-              <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-brand-green" /> Date & Heure
-              </label>
-              <input
-                type="datetime-local"
-                value={formData.eventDatetime}
-                onChange={(e) => setFormData({ ...formData, eventDatetime: e.target.value })}
+                placeholder="Ex: Cotonou"
                 className="w-full bg-ui-gray/50 border border-gray-100 py-4 px-6 rounded-2xl focus:ring-2 focus:ring-brand-green focus:bg-white outline-none transition-all"
               />
             </div>
           </div>
 
           <div className="space-y-2">
+            <label className="text-sm font-semibold text-gray-700">Indication de localisation précise</label>
+            <textarea
+              rows={2}
+              value={formData.location_details}
+              onChange={(e) => setFormData({ ...formData, location_details: e.target.value })}
+              placeholder="Ex: Près du stade de l'amitié, terrain C"
+              className="w-full bg-ui-gray/50 border border-gray-100 py-4 px-6 rounded-2xl focus:ring-2 focus:ring-brand-green focus:bg-white outline-none transition-all resize-none"
+            />
+          </div>
+
+          <div className={`${formData.type === 'materiel' ? 'hidden' : 'block'} space-y-2`}>
+            <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-brand-green" /> Date & Heure
+            </label>
+            <input
+              type="datetime-local"
+              value={formData.eventDatetime}
+              onChange={(e) => setFormData({ ...formData, eventDatetime: e.target.value })}
+              className="w-full bg-ui-gray/50 border border-gray-100 py-4 px-6 rounded-2xl focus:ring-2 focus:ring-brand-green focus:bg-white outline-none transition-all"
+            />
+          </div>
+
+          <div className="space-y-2">
             <label className="text-sm font-semibold text-gray-700">Niveau requis</label>
             <select
-               value={formData.requiredLevel}
-               onChange={(e) => setFormData({ ...formData, requiredLevel: e.target.value })}
-               className="w-full bg-ui-gray/50 border border-gray-100 py-4 px-6 rounded-2xl focus:ring-2 focus:ring-brand-green focus:bg-white outline-none transition-all appearance-none"
+              value={formData.requiredLevel}
+              onChange={(e) => setFormData({ ...formData, requiredLevel: e.target.value })}
+              className="w-full bg-ui-gray/50 border border-gray-100 py-4 px-6 rounded-2xl focus:ring-2 focus:ring-brand-green focus:bg-white outline-none transition-all appearance-none"
             >
-               <option value="debutant">Débutant</option>
-               <option value="intermediaire">Intermédiaire</option>
-               <option value="avance">Avancé</option>
+              <option value="debutant">Débutant</option>
+              <option value="intermediaire">Intermédiaire</option>
+              <option value="avance">Avancé</option>
             </select>
           </div>
         </div>

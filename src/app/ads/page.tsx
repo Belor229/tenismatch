@@ -93,8 +93,13 @@ export default async function AdsPage({
                                 </h3>
                                 <div className="flex flex-col gap-2 text-gray-500 text-sm mb-6">
                                     <div className="flex items-center gap-2">
-                                        <MapPin className="w-4 h-4 text-brand-green" /> {ad.city}
+                                        <MapPin className="w-4 h-4 text-brand-green" /> {ad.country && `${ad.country}, `}{ad.city}
                                     </div>
+                                    {ad.location_details && (
+                                        <div className="text-xs text-gray-400 line-clamp-1 italic">
+                                            {ad.location_details}
+                                        </div>
+                                    )}
                                     {ad.event_datetime && (
                                         <div className="flex items-center gap-2">
                                             <Calendar className="w-4 h-4 text-brand-green" /> {new Date(ad.event_datetime).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}

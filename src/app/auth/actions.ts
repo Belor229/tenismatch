@@ -5,9 +5,9 @@ import { supabase } from "@/lib/supabase";
 import { createSession } from "@/lib/auth";
 
 export async function signup(formData: any) {
-    const { phone, displayName, password, city, level } = formData;
+    const { phone, displayName, password, country, level } = formData;
 
-    if (!phone || !displayName || !password) {
+    if (!phone || !displayName || !password || !country) {
         return { error: "Tous les champs obligatoires doivent être remplis." };
     }
 
@@ -40,7 +40,7 @@ export async function signup(formData: any) {
             .insert([{
                 user_id: userData.id,
                 display_name: displayName,
-                city,
+                country,
                 level
             }]);
 

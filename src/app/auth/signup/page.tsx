@@ -8,11 +8,17 @@ import { signup } from "../actions";
 
 export default function SignupPage() {
     const router = useRouter();
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<{
+        phone: string;
+        displayName: string;
+        password: string;
+        country: string;
+        level: string;
+    }>({
         phone: "",
         displayName: "",
         password: "",
-        city: "",
+        country: "",
         level: "debutant",
     });
     const [error, setError] = useState("");
@@ -88,18 +94,24 @@ export default function SignupPage() {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
-                            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Ville</label>
+                            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Pays</label>
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-brand-green transition-colors">
                                     <MapPin className="w-4 h-4" />
                                 </div>
-                                <input
-                                    type="text"
-                                    value={formData.city}
-                                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                                    placeholder="Ex: Paris"
-                                    className="w-full bg-white border border-gray-200 py-4 pl-10 pr-4 rounded-2xl focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-all"
-                                />
+                                <select
+                                    value={formData.country}
+                                    onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                                    className="w-full bg-white border border-gray-200 py-4 pl-10 pr-4 rounded-2xl focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-all appearance-none"
+                                >
+                                    <option value="">Choisir...</option>
+                                    <option value="Bénin">Bénin</option>
+                                    <option value="Togo">Togo</option>
+                                    <option value="Côte d'Ivoire">Côte d'Ivoire</option>
+                                    <option value="Sénégal">Sénégal</option>
+                                    <option value="Cameroun">Cameroun</option>
+                                    <option value="France">France</option>
+                                </select>
                             </div>
                         </div>
                         <div className="space-y-1">
@@ -110,7 +122,7 @@ export default function SignupPage() {
                                 className="w-full bg-white border border-gray-200 py-4 px-4 rounded-2xl focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-all appearance-none"
                             >
                                 <option value="debutant">Débutant</option>
-                                <option value="intermediaire">Intermédiate</option>
+                                <option value="intermediaire">Intermédiaire</option>
                                 <option value="avance">Avancé</option>
                             </select>
                         </div>

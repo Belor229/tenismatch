@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getProfile, getUserAds } from "./actions";
 import { getCurrentUserId } from "@/lib/auth";
 import LogoutButton from "./LogoutButton";
+import VictoryManager from "./VictoryManager";
 
 export const dynamic = "force-dynamic";
 
@@ -23,16 +24,20 @@ export default async function ProfilePage() {
                 <div className="px-6 md:px-8 pb-10 -mt-12 md:-mt-16">
                     <div className="flex flex-col md:flex-row items-center md:items-end justify-between gap-6 mb-8">
                         <div className="flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-6 text-center md:text-left">
-                            <div className="w-24 h-24 md:w-32 md:h-32 bg-white p-1.5 md:p-2 rounded-[28px] md:rounded-[32px] shadow-xl">
-                                <div className="w-full h-full bg-brand-green/10 rounded-[22px] md:rounded-[24px] flex items-center justify-center text-brand-green font-bold text-3xl md:text-4xl uppercase">
-                                    {(profile.display_name || "U").charAt(0)}
-                                </div>
+                            <div className="w-24 h-24 md:w-32 md:h-32 bg-white p-1.5 md:p-2 rounded-[28px] md:rounded-[32px] shadow-xl overflow-hidden">
+                                {profile.avatar_url ? (
+                                    <img src={profile.avatar_url} alt={profile.display_name} className="w-full h-full object-cover rounded-[22px] md:rounded-[24px]" />
+                                ) : (
+                                    <div className="w-full h-full bg-brand-green/10 rounded-[22px] md:rounded-[24px] flex items-center justify-center text-brand-green font-bold text-3xl md:text-4xl uppercase">
+                                        {(profile.display_name || "U").charAt(0)}
+                                    </div>
+                                )}
                             </div>
                             <div className="pb-1">
                                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">{profile.display_name}</h1>
                                 <div className="flex flex-wrap justify-center md:justify-start gap-3 md:gap-4">
                                     <div className="flex items-center gap-1.5 text-gray-500 text-[10px] md:text-sm font-semibold uppercase tracking-widest">
-                                        <MapPin className="w-3 h-3 md:w-4 md:h-4 text-brand-green" /> {profile.city || 'Ville non définie'}
+                                        <MapPin className="w-3 h-3 md:w-4 md:h-4 text-brand-green" /> {profile.country && `${profile.country}, `}{profile.city || 'Ville non définie'}
                                     </div>
                                     <div className="flex items-center gap-1.5 text-[10px] md:text-xs font-bold text-brand-green uppercase tracking-widest bg-brand-green/5 px-3 py-1 rounded-full">
                                         Joueur {profile.level}
@@ -48,34 +53,24 @@ export default async function ProfilePage() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8 border-t border-gray-50">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-gray-50">
+                        <div className="space-y-2">
+                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Expérience</h3>
+                            <p className="text-gray-600 text-sm leading-relaxed">
+                                {profile.experience || "Aucune expérience renseignée."}
+                            </p>
+                        </div>
                         <div className="space-y-2">
                             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Bio</h3>
                             <p className="text-gray-600 text-sm leading-relaxed">
                                 {profile.bio || "Aucune biographie complétée pour le moment."}
                             </p>
                         </div>
-                        <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="bg-ui-gray/30 p-5 rounded-3xl text-center">
-                                <div className="text-2xl font-bold text-gray-900">{ads.length}</div>
-                                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Annonces</div>
-                            </div>
-                            <div className="bg-ui-gray/30 p-5 rounded-3xl text-center">
-                                <div className="text-2xl font-bold text-gray-900">—</div>
-                                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Matchs joués</div>
-                            </div>
-                            <div className="bg-ui-gray/30 p-5 rounded-3xl text-center">
-                                <div className="text-2xl font-bold text-gray-900">—</div>
-                                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Amis</div>
-                            </div>
-                            <div className="bg-ui-gray/30 p-5 rounded-3xl text-center">
-                                <div className="text-2xl font-bold text-gray-900">—</div>
-                                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Tournois</div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
+
+            <VictoryManager initialVictories={profile.victories || []} />
 
             <div className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">

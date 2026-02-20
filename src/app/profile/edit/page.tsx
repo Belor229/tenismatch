@@ -11,12 +11,25 @@ export default function EditProfilePage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<{
+        displayName: string;
+        age: string | number;
+        country: string;
+        city: string;
+        level: string;
+        bio: string;
+        experience: string;
+        avatarUrl: string;
+        isPublic: boolean;
+    }>({
         displayName: "",
         age: "",
+        country: "",
         city: "",
         level: "debutant",
         bio: "",
+        experience: "",
+        avatarUrl: "",
         isPublic: true,
     });
 
@@ -27,9 +40,12 @@ export default function EditProfilePage() {
                 setFormData({
                     displayName: profile.display_name || "",
                     age: profile.age || "",
+                    country: profile.country || "",
                     city: profile.city || "",
                     level: profile.level || "debutant",
                     bio: profile.bio || "",
+                    experience: profile.experience || "",
+                    avatarUrl: profile.avatar_url || "",
                     isPublic: profile.is_public === true || profile.is_public === 1,
                 });
             } else {
@@ -45,7 +61,7 @@ export default function EditProfilePage() {
         setSaving(true);
         setError("");
 
-        const result = await updateProfileForCurrentUser(formData);
+        const result: any = await updateProfileForCurrentUser(formData);
 
         if (result.success) {
             router.push("/profile");
@@ -97,6 +113,24 @@ export default function EditProfilePage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                <MapPin className="w-4 h-4 text-brand-green" /> Pays
+                            </label>
+                            <select
+                                value={formData.country}
+                                onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                                className="w-full bg-ui-gray/50 border border-gray-100 py-4 px-6 rounded-2xl focus:ring-2 focus:ring-brand-green focus:bg-white outline-none transition-all appearance-none"
+                            >
+                                <option value="">Choisir...</option>
+                                <option value="Bénin">Bénin</option>
+                                <option value="Togo">Togo</option>
+                                <option value="Côte d'Ivoire">Côte d'Ivoire</option>
+                                <option value="Sénégal">Sénégal</option>
+                                <option value="Cameroun">Cameroun</option>
+                                <option value="France">France</option>
+                            </select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                                 <MapPin className="w-4 h-4 text-brand-green" /> Ville
                             </label>
                             <input
@@ -107,6 +141,9 @@ export default function EditProfilePage() {
                                 className="w-full bg-ui-gray/50 border border-gray-100 py-4 px-6 rounded-2xl focus:ring-2 focus:ring-brand-green focus:bg-white outline-none transition-all"
                             />
                         </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                                 <Award className="w-4 h-4 text-brand-green" /> Niveau
@@ -121,17 +158,42 @@ export default function EditProfilePage() {
                                 <option value="avance">Avancé</option>
                             </select>
                         </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                <User className="w-4 h-4 text-brand-green" /> Photo de profil (URL)
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.avatarUrl}
+                                onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
+                                placeholder="https://exemple.com/image.jpg"
+                                className="w-full bg-ui-gray/50 border border-gray-100 py-4 px-6 rounded-2xl focus:ring-2 focus:ring-brand-green focus:bg-white outline-none transition-all"
+                            />
+                        </div>
                     </div>
 
                     <div className="space-y-2">
                         <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                            <FileText className="w-4 h-4 text-brand-green" /> Biographie
+                            <FileText className="w-4 h-4 text-brand-green" /> Expérience & Parcours
                         </label>
                         <textarea
-                            rows={4}
+                            rows={3}
+                            value={formData.experience}
+                            onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
+                            placeholder="Décrivez vos années de pratique, vos clubs, votre style de jeu..."
+                            className="w-full bg-ui-gray/50 border border-gray-100 py-4 px-6 rounded-2xl focus:ring-2 focus:ring-brand-green focus:bg-white outline-none transition-all resize-none"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            <FileText className="w-4 h-4 text-brand-green" /> Biographie (Rapide)
+                        </label>
+                        <textarea
+                            rows={3}
                             value={formData.bio}
                             onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                            placeholder="Parlez de votre jeu, vos disponibilités..."
+                            placeholder="Un petit mot sur vous..."
                             className="w-full bg-ui-gray/50 border border-gray-100 py-4 px-6 rounded-2xl focus:ring-2 focus:ring-brand-green focus:bg-white outline-none transition-all resize-none"
                         />
                     </div>

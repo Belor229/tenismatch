@@ -5,10 +5,10 @@ import { AdType, UserLevel } from "@/types";
 import { revalidatePath } from "next/cache";
 
 export async function createAd(formData: any) {
-  const { userId, type, title, description, city, location, eventDatetime, requiredLevel } = formData;
+  const { userId, type, title, description, country, city, location, location_details, eventDatetime, requiredLevel } = formData;
 
-  if (!userId || !type || !title || !description || !city) {
-    return { error: "Veuillez remplir tous les champs obligatoires." };
+  if (!userId || !type || !title || !description || !country || !city) {
+    return { error: "Veuillez remplir tous les champs obligatoires (Type, Titre, Description, Pays, Ville)." };
   }
 
   try {
@@ -20,29 +20,37 @@ export async function createAd(formData: any) {
           type,
           title,
           description,
+          country,
           city,
           location: location || null,
+          location_details: location_details || null,
           event_datetime: eventDatetime || null,
-          required_level: requiredLevel || null
+          required_level: requiredLevel || null,
+          is_active: true,
+          is_deleted: false
         }
       ])
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error("Supabase insert error:", error);
+      throw error;
+    }
 
-    revalidatePath("/");
+    console.log("Ad created successfully:", data.id);
     revalidatePath("/ads");
+    revalidatePath("/");
 
     return { success: true, adId: data.id };
   } catch (error: any) {
     console.error("Create ad error:", error);
-    return { error: "Une erreur est survenue lors de la création de l'annonce." };
+    return { error: "Une erreur est survenue lors de la création de l'annonce : " + (error.message || "Erreur inconnue") };
   }
 }
 
 export async function getAds(filters: any = {}) {
-  const { type, city, level } = filters;
+  const { type, country, city, level } = filters;
 
   try {
     let query = supabase
@@ -53,6 +61,9 @@ export async function getAds(filters: any = {}) {
 
     if (type) {
       query = query.eq('type', type);
+    }
+    if (country) {
+      query = query.eq('country', country);
     }
     if (city) {
       query = query.ilike('city', `%${city}%`);
