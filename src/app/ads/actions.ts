@@ -38,8 +38,8 @@ export async function createAd(formData: any) {
       throw error;
     }
 
-    console.log("Ad created successfully:", data.id);
     revalidatePath("/ads");
+    revalidatePath("/ads/my");
     revalidatePath("/");
 
     return { success: true, adId: data.id };
@@ -56,8 +56,8 @@ export async function getAds(filters: any = {}) {
     let query = supabase
       .from('ads')
       .select('*, user_profiles(display_name, avatar_url)')
-      .eq('is_active', true)
-      .eq('is_deleted', false);
+      .eq('is_deleted', false)
+      .eq('is_active', true);
 
     if (type) {
       query = query.eq('type', type);
@@ -96,10 +96,11 @@ export async function getAds(filters: any = {}) {
 
 export async function getAdById(id: string) {
   try {
+    const numericId = parseInt(id);
     const { data, error } = await supabase
       .from('ads')
       .select('*, user_profiles(display_name, avatar_url, level), users(phone)')
-      .eq('id', id)
+      .eq('id', isNaN(numericId) ? id : numericId)
       .single();
 
     if (error || !data) return null;
