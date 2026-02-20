@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Phone, Lock, User, MapPin, ArrowRight, AlertCircle } from "lucide-react";
+import { MapPin, Phone, Lock, User, Award, ChevronRight, LogIn, AlertCircle, ArrowRight } from "lucide-react";
+import { COUNTRIES } from "@/lib/countries";
 import { signup } from "../actions";
 
 export default function SignupPage() {
@@ -100,17 +101,17 @@ export default function SignupPage() {
                                     <MapPin className="w-4 h-4" />
                                 </div>
                                 <select
+                                    required
                                     value={formData.country}
                                     onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                                    className="w-full bg-white border border-gray-200 py-4 pl-10 pr-4 rounded-2xl focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-all appearance-none"
+                                    className="w-full bg-white border border-gray-200 py-4 px-4 rounded-2xl focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-all appearance-none"
                                 >
-                                    <option value="">Choisir...</option>
-                                    <option value="Bénin">Bénin</option>
-                                    <option value="Togo">Togo</option>
-                                    <option value="Côte d'Ivoire">Côte d'Ivoire</option>
-                                    <option value="Sénégal">Sénégal</option>
-                                    <option value="Cameroun">Cameroun</option>
-                                    <option value="France">France</option>
+                                    <option value="">Sélectionner un pays</option>
+                                    {COUNTRIES.map((country) => (
+                                        <option key={country} value={country}>
+                                            {country}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                         </div>

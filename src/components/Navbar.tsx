@@ -43,6 +43,17 @@ export default function Navbar({ isLoggedIn = false }: { isLoggedIn?: boolean })
                             </Link>
                         );
                     })}
+                    {isLoggedIn && (
+                        <Link
+                            href="/ads/my"
+                            className={cn(
+                                "text-sm font-medium transition-colors hover:text-brand-green",
+                                pathname === "/ads/my" ? "text-brand-green" : "text-gray-600"
+                            )}
+                        >
+                            Mes annonces
+                        </Link>
+                    )}
                     {!isLoggedIn ? (
                         <Link
                             href="/auth/login"

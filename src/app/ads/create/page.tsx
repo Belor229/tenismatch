@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { MapPin, Calendar, MessageSquare, Package, ChevronRight, AlertCircle, Sparkles, Trophy } from "lucide-react";
+import { COUNTRIES } from "@/lib/countries";
 import { createAd } from "../actions";
 import { getCurrentUserIdAction } from "@/app/auth/actions";
 import { cn } from "@/lib/utils";
@@ -143,13 +144,12 @@ export default function CreateAdPage() {
                 onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                 className="w-full bg-ui-gray/50 border border-gray-100 py-4 px-6 rounded-2xl focus:ring-2 focus:ring-brand-green focus:bg-white outline-none transition-all appearance-none"
               >
-                <option value="">Choisir un pays...</option>
-                <option value="Bénin">Bénin</option>
-                <option value="Togo">Togo</option>
-                <option value="Côte d'Ivoire">Côte d'Ivoire</option>
-                <option value="Sénégal">Sénégal</option>
-                <option value="Cameroun">Cameroun</option>
-                <option value="France">France</option>
+                <option value="">Choisir un pays</option>
+                {COUNTRIES.map((country) => (
+                  <option key={country} value={country}>
+                    {country}
+                  </option>
+                ))}
               </select>
             </div>
 

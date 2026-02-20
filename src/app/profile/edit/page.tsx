@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, MapPin, Award, FileText, Check, ChevronLeft, AlertCircle } from "lucide-react";
+import { MapPin, Award, FileText, Camera, Shield, Save, ChevronLeft, Trash2, User, Check, AlertCircle } from "lucide-react";
+import { COUNTRIES } from "@/lib/countries";
 import { getProfileForCurrentUser, updateProfileForCurrentUser } from "@/app/profile/actions";
 
 export default function EditProfilePage() {
@@ -120,13 +121,12 @@ export default function EditProfilePage() {
                                 onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                                 className="w-full bg-ui-gray/50 border border-gray-100 py-4 px-6 rounded-2xl focus:ring-2 focus:ring-brand-green focus:bg-white outline-none transition-all appearance-none"
                             >
-                                <option value="">Choisir...</option>
-                                <option value="Bénin">Bénin</option>
-                                <option value="Togo">Togo</option>
-                                <option value="Côte d'Ivoire">Côte d'Ivoire</option>
-                                <option value="Sénégal">Sénégal</option>
-                                <option value="Cameroun">Cameroun</option>
-                                <option value="France">France</option>
+                                <option value="">Choisir un pays</option>
+                                {COUNTRIES.map((country) => (
+                                    <option key={country} value={country}>
+                                        {country}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                         <div className="space-y-2">
