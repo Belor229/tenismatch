@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Send, ArrowLeft, MoreVertical, ShieldAlert, PhoneOff } from "lucide-react";
+import { Send, ArrowLeft, MoreVertical, ShieldAlert, PhoneOff, Check, CheckCheck } from "lucide-react";
 import Link from "next/link";
 import { sendMessage, getMessages } from "@/app/messages/actions";
+import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 
 export default function ChatWindow({
@@ -20,6 +21,8 @@ export default function ChatWindow({
     const [messages, setMessages] = useState(initialMessages);
     const [inputText, setInputText] = useState("");
     const [isSending, setIsSending] = useState(false);
+    const [isOnline, setIsOnline] = useState(true);
+    const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -30,32 +33,83 @@ export default function ChatWindow({
         scrollToBottom();
     }, [messages]);
 
-    // Polling for new messages every 5 seconds
+    // Realtime subscription with Supabase
     useEffect(() => {
-        const interval = setInterval(async () => {
-            const newMessages = await getMessages(conversationId);
-            if (JSON.stringify(newMessages) !== JSON.stringify(messages)) {
-                setMessages(newMessages);
-            }
-        }, 5000);
+        const channel = supabase
+            .channel(`messages:${conversationId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'messages',
+                    filter: `conversation_id=eq.${conversationId}`
+                },
+                (payload) => {
+                    const newMessage = payload.new;
+                    setMessages(prev => [...prev, newMessage]);
+                }
+            )
+            .subscribe();
 
-        return () => clearInterval(interval);
-    }, [conversationId, messages]);
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [conversationId]);
+
+    // Simulate typing indicator
+    useEffect(() => {
+        const handleTyping = () => setIsTyping(true);
+        const handleStopTyping = () => setIsTyping(false);
+
+        // This would be implemented with WebSocket in a real app
+        // For now, just a simple simulation
+        const typingTimeout = setTimeout(handleStopTyping, 3000);
+
+        return () => clearTimeout(typingTimeout);
+    }, [inputText]);
 
     const handleSend = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!inputText.trim() || isSending) return;
 
         setIsSending(true);
+        const tempMessage = {
+            id: Date.now(),
+            conversation_id: conversationId,
+            sender_id: userId,
+            message_text: inputText,
+            created_at: new Date().toISOString(),
+            pending: true
+        };
+
+        // Add optimistic update
+        setMessages(prev => [...prev, tempMessage]);
+        setInputText("");
+
         const result = await sendMessage(conversationId, userId, inputText);
 
         if (result.success) {
-            setInputText("");
-            // Refresh messages immediately
-            const updatedMessages = await getMessages(conversationId);
-            setMessages(updatedMessages);
+            // Remove pending message and let realtime handle the update
+            setMessages(prev => prev.filter(msg => msg.id !== tempMessage.id));
+        } else {
+            // Remove pending message and show error
+            setMessages(prev => prev.filter(msg => msg.id !== tempMessage.id));
+            // Could show error toast here
         }
         setIsSending(false);
+    };
+
+    const formatTime = (dateString: string) => {
+        return new Date(dateString).toLocaleTimeString('fr-FR', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+    };
+
+    const isMessageRead = (message: any) => {
+        // This would be implemented with read receipts
+        return message.sender_id !== userId; // Simplified for now
     };
 
     return (
@@ -73,8 +127,18 @@ export default function ChatWindow({
                         <div>
                             <h2 className="font-bold text-gray-900 leading-tight">{otherUserName}</h2>
                             <div className="flex items-center gap-1.5">
-                                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">En ligne</span>
+                                <span className={cn(
+                                    "w-2 h-2 rounded-full",
+                                    isOnline ? "bg-green-500 animate-pulse" : "bg-gray-400"
+                                )} />
+                                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                                    {isOnline ? "En ligne" : "Hors ligne"}
+                                </span>
+                                {isTyping && (
+                                    <span className="text-[10px] text-brand-green font-medium italic">
+                                        écrit...
+                                    </span>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -93,6 +157,8 @@ export default function ChatWindow({
             <div className="flex-grow overflow-y-auto p-6 space-y-4 bg-ui-gray/20">
                 {messages.map((msg, i) => {
                     const isMe = msg.sender_id === userId;
+                    const showReadReceipt = isMe && isMessageRead(msg);
+                    
                     return (
                         <div
                             key={msg.id}
@@ -103,20 +169,44 @@ export default function ChatWindow({
                         >
                             <div
                                 className={cn(
-                                    "px-5 py-3 rounded-3xl text-sm leading-relaxed shadow-sm",
+                                    "px-5 py-3 rounded-3xl text-sm leading-relaxed shadow-sm relative",
                                     isMe
-                                        ? "bg-brand-green text-white rounded-br-none"
-                                        : "bg-white text-gray-800 rounded-bl-none border border-gray-50"
+                                        ? "bg-brand-green text-white rounded-br-none" 
+                                        : "bg-white text-gray-800 rounded-bl-none border border-gray-50",
+                                    msg.pending && "opacity-70"
                                 )}
                             >
                                 {msg.message_text}
+                                {msg.pending && (
+                                    <div className="absolute top-1 right-1">
+                                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" />
+                                    </div>
+                                )}
                             </div>
-                            <span className="text-[10px] text-gray-400 mt-1 font-medium px-2">
-                                {new Date(msg.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                            </span>
+                            <div className="flex items-center gap-1 mt-1 px-2">
+                                <span className="text-[10px] text-gray-400 font-medium">
+                                    {formatTime(msg.created_at)}
+                                </span>
+                                {showReadReceipt && (
+                                    <CheckCheck className="w-3 h-3 text-blue-500" />
+                                )}
+                                {isMe && !showReadReceipt && !msg.pending && (
+                                    <Check className="w-3 h-3 text-gray-400" />
+                                )}
+                            </div>
                         </div>
                     );
                 })}
+                {isTyping && (
+                    <div className="flex items-center gap-2 text-gray-500 text-sm">
+                        <div className="flex gap-1">
+                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                        <span className="text-xs italic">{otherUserName} écrit...</span>
+                    </div>
+                )}
                 <div ref={messagesEndRef} />
             </div>
 
@@ -129,14 +219,20 @@ export default function ChatWindow({
                         onChange={(e) => setInputText(e.target.value)}
                         placeholder="Écrivez votre message..."
                         className="w-full bg-ui-gray/50 border border-transparent py-4 pl-6 pr-16 rounded-full focus:ring-2 focus:ring-brand-green focus:bg-white focus:border-transparent outline-none transition-all shadow-inner"
+                        maxLength={500}
                     />
-                    <button
-                        type="submit"
-                        disabled={!inputText.trim() || isSending}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-brand-green text-white rounded-full flex items-center justify-center shadow-lg shadow-brand-green/20 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all z-10"
-                    >
-                        <Send className="w-4 h-4" />
-                    </button>
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                        <span className="text-xs text-gray-400 px-2">
+                            {inputText.length}/500
+                        </span>
+                        <button
+                            type="submit"
+                            disabled={!inputText.trim() || isSending}
+                            className="w-10 h-10 bg-brand-green text-white rounded-full flex items-center justify-center shadow-lg shadow-brand-green/20 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all z-10"
+                        >
+                            <Send className="w-4 h-4" />
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
